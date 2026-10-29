@@ -1,0 +1,5 @@
+1. Open this mini-project folder in Antigravity (or copy its contents into your repo clone).
+2. Open PROMPT_FOR_ANTIGRAVITY.txt and fill in the <...> placeholders: teammates' GitHub usernames and the repo owner.
+3. Paste the whole prompt into Antigravity.
+4. docs/ already has the SRS, Test Plan, SAD (docx plus readable markdown copies), the Lab 1 PDF and the handout photo.
+5. backlog/master_backlog.csv has all 28 issues; backlog/Sprint1_Issues_by_Member/ has one file per person.

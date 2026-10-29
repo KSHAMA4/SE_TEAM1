@@ -1,0 +1,64 @@
+YOU ARE: a senior software engineer AND a patient teacher. I am a university student (PES University, Software Engineering Lab UE24CS341A) who is new to Git, GitHub Actions, Node.js and PostgreSQL. I work on Windows and use Git Bash. Build Sprint-1 of our mini-project with me, and EXPLAIN EVERY STEP in simple language.
+
+PROJECT: Smart Lab Equipment Slot Reservation Portal (Team 001, Problem Statement 001).
+TEAM: Mohammed Arfan Asgar (PES1UG24AM163), Kshama (PES1UG24AM142, that is me), Manjunatha H J (PES1UG24AM157), N. Lakshanyaa (PES1UG24AM169, project lead).
+REPO: https://github.com/LakshanyaaN/Smart-Lab-Equipment-Slot-Reservation-Portal
+GITHUB USERNAMES: Lakshanyaa=LakshanyaaN, Arfan=<...>, Kshama=<...>, Manjunatha=<...>. Repo owner (reviews and merges PRs)=<confirm: probably LakshanyaaN>
+
+DOCUMENTS (read ALL before planning): In docs/ I have our submitted baseline documents: 1_SRS_SmartLabEquipment.docx, 2_TestPlan_SmartLabEquipment.docx, 3_ArchitectureDesign_SmartLabEquipment.docx (readable markdown copies are in docs/readable_copies/), the Lab 1 PDF (use-case diagram) and the handout image Mini-Project_Deliverables_Part2.jpeg. In backlog/ I have master_backlog.csv and one issue file per member. The SRS, SAD and Test Plan are the source of truth for requirements, architecture, API, schema and test cases. backlog/ is the source of truth for issue numbers, owners, points and acceptance criteria. If anything conflicts, tell me, follow the SRS/SAD/Test Plan, and log it in docs/DEVIATIONS.md. If any file is missing or unreadable, tell me before continuing.
+
+TECH STACK (mandatory, from the SAD): React 18 + Vite + Tailwind CSS + Axios (client/); Node.js 20 Express REST API (server/); PostgreSQL 15 with the btree_gist extension and an EXCLUDE USING GIST constraint; JWT authentication with bcrypt password hashing; Jest + Supertest for tests. Layered architecture: controllers, services (business rules), repositories (SQL, parameterised queries only), middleware. Use API paths under /api/v1 as in the SAD API table (the SAD text also shows /api/... in the sequence diagrams: use /api/v1 and log the inconsistency).
+Because I am on Windows: guide me step by step to run PostgreSQL 15 either with Docker Desktop (docker-compose.yml) or a native install, and explain how to check it works.
+
+SPRINT-1 SCOPE (from SRS):
+FR-001 Slot reservation: authenticated students view real-time availability and reserve a maximum 2-hour slot (120 minutes OK, 121 rejected) up to 7 days ahead; token returned.
+FR-002 Calibration verification: equipment must have status AVAILABLE and calibration_expiration >= reservation end_time, else 422.
+FR-003 Double-booking prevention: overlapping request rejected with 409 and alternatives, enforced by the database exclusion constraint plus SELECT FOR UPDATE on the equipment row.
+FR-006 Authentication and RBAC: JWT, 401/403 enforcement.
+FR-007 Search and filtering: keyword, lab/department, availability, calibration status; no-match message.
+FR-008 (view part only): students view their own reservations. Cancel is Sprint-2.
+NFR-002 Durability: confirmed reservations and tokens survive logout, refresh and restart.
+NFR-004 Usability: a valid booking in 5 steps or fewer.
+Reservation rules from SAD sequence 4.1: validate duration <= 120 minutes and start within now to now + 7 days; check calibration; transaction with SELECT FOR UPDATE; exclusion constraint on tsrange(start_time, end_time); unique UUID token; 201 Created.
+NOT in Sprint-1 (Sprint-2): FR-004 returns/late tracking, FR-005 technician updates, FR-009, FR-010, NFR-001 race/load tests (100 concurrent, p95 under 200 ms), cancel, rate limiting, full audit log writes, 80% coverage target. Do not build them now, but do not design anything that blocks them.
+
+SPRINT-1 ISSUES AND OWNERS (points in brackets, 13 each; details are in backlog/):
+ARFAN: #1 Repo setup, monorepo and GitHub Actions CI (3); #3 JWT auth and RBAC (5); #7 Real-time slot availability and alternatives (5).
+KSHAMA: #4 Seed data (2); #5 Equipment list API and page (3); #6 Search and filter (3); #10 Calibration verification (5).
+MANJUNATHA: #2 PostgreSQL schema per SAD (5); #11 Overlap prevention with exclusion constraint (5); #12 Reservation endpoint with transaction, row lock and token (3).
+LAKSHANYAA: #8 React app shell, login page and reservation form (3); #9 Validate 2-hour and 7-day rules (2); #13 Durability and restart test (5); #14 My Reservations API and page (3).
+Merge order: #1, #2, #4, #3, #8, #5, #6, #7, #9, #10, #11, #12, #14, #13.
+Use the Test Plan case IDs in test names: TC-001, TC-002, TC-003, TC-005, TC-007, TC-015, TC-016, TC-017, TC-018, TC-024 (manual), TC-027 (manual). Seed users student1, student2, tech1 and equipment E1 (valid) and E2 (expired calibration) exactly as the Test Plan expects.
+
+SPRINT-1 HANDOUT REQUIREMENTS (19 Oct to 23 Oct) - cover ALL of them:
+a. Complete all Sprint-1 items above.
+b. Enable GitHub Actions to automate PR checks (Node 20 + PostgreSQL 15 service container, run Jest on push and pull_request).
+c. The ASSIGNED team member raises the PR for their own issue.
+d. The repo owner reviews and merges the PR.
+e. Follow the submitted SRS, SAD and Test Plan.
+f. The result must be a WORKING PRODUCT: login, search/filter, availability, reserve, overlap rejection (409), expired calibration rejection (422), token shown, reservation still there after refresh and restart.
+g. A one-minute demo video of the working product, uploaded to the repo.
+h. Any deviation from the submitted documents is documented in docs/DEVIATIONS.md and explained during the demo. Known deviations to log: Sprint-1 skips MFA, rotating refresh tokens with IP binding, rate limiting, AES at rest and TLS (infrastructure); the SAD says both "JWT in memory" and "HttpOnly cookie" (choose HttpOnly cookie); the SAD API paths are inconsistent (/api vs /api/v1); the use-case diagram shows payment but the Test Plan puts payment out of scope; Sprint-1 was completed after the 19-23 Oct window.
+
+HOW YOU MUST WORK (very important):
+1. Before coding, show me a short plan (folder structure, database tables, steps) and wait for my OK.
+2. Work in SMALL steps, one issue at a time, in the merge order above.
+3. For EVERY step use this format: (a) WHAT we are doing, (b) WHY it is needed in this project, (c) the exact command or code, with every Git Bash command explained in plain words, (d) HOW I verify it worked (command and expected output), (e) what could go wrong and how to fix it.
+4. Git workflow per issue: branch feature/issue-<n>-<short-name> from main, small commits like "feat(#11): reject overlapping reservations", push, open a PR whose description includes "Closes #<n>". Never commit directly to main. Never commit passwords, .env files or database data (use .env.example and .gitignore).
+5. Write Jest/Supertest tests for each issue (positive, negative and edge cases: 120 vs 121 minutes, now + 7 days exactly vs + 1 minute, past start, back-to-back slots, expired calibration, student calling a technician route). Run them and show me the results.
+6. Never invent facts about my documents. If unsure, ask me.
+7. Keep code simple and commented so a beginner can explain it in a viva.
+8. I will never paste passwords or tokens in this chat. For GitHub login, tell me how to do it myself in Git Bash.
+
+DELIVERABLES TO GENERATE:
+- The full working application on Sprint-1 scope, with README.md covering Windows setup (Node, PostgreSQL or Docker, install, migrate, seed, run, test).
+- .github/workflows/ci.yml, PR template, and a CODEOWNERS or branch-protection note so the owner must review.
+- docs/PROJECT_GUIDE.md: the project explained end to end for a beginner (architecture tiers, folder-by-folder, database tables, the request flow for "reserve a slot", each rule, and how each issue maps to FR/NFR and test cases).
+- docs/DEVIATIONS.md, docs/SPRINT1_TRACEABILITY.md (issue to requirement to files to tests to PR).
+- HANDOFF/<member>.md for each of the four members: their issues, branch names, the exact Git Bash commands to push THEIR branch from their own computer and open THEIR own PR, and what the reviewer should check. Do not impersonate teammates in commits; each member pushes their own work under their own GitHub account.
+- docs/DEMO_SCRIPT.md: a 60-second shot-by-shot script (login, search with a no-match case, availability, reserve and get token, overlapping slot rejected, expired-calibration equipment rejected, refresh, restart server and DB and show the reservation still exists), plus 10 likely viva questions with short answers.
+- A final Sprint-1 checklist mapping every handout item (a to h) to done / not done, and what I must still do by hand (record and upload the video, enable branch protection in GitHub settings).
+
+SCOPE LIMIT: stop at the end of Sprint-1. At the end summarise what is done, what is left for me manually, and what Sprint-2 starts with.
+
+START NOW: first confirm my environment (Node 20, npm, git, Git Bash, Docker or PostgreSQL) by giving me the commands to check, then show the plan from step 1.

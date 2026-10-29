@@ -1,0 +1,29 @@
+Issue,Title,Requirement,Story Points,Sprint,Assignee,Test Cases,Body
+1,"Repo setup, monorepo structure and GitHub Actions CI",Setup / NFR-006,3,Sprint-1,Mohammed Arfan Asgar,-,"Create the project skeleton (server/ = Node.js Express API, client/ = React 18 + Vite + Tailwind) and automate checks on every pull request."
+2,"PostgreSQL schema per SAD: users, laboratories, equipment, reservations, audit_logs",FR-003 / NFR-002,5,Sprint-1,Manjunatha H J,TC-007,Create the relational schema exactly as specified in SAD section 6. Merge this first after repo setup; everything depends on it.
+3,Authentication and role-based access control (JWT),FR-006 / NFR-003,5,Sprint-1,Mohammed Arfan Asgar,"TC-015, TC-016","Backend login with bcrypt-hashed passwords and JWT, plus middleware that protects routes by role."
+4,"Seed data: laboratories, equipment, users",FR-002,2,Sprint-1,Kshama,"TC-001, TC-005",Create repeatable sample data that matches the Test Plan.
+5,Equipment list: API and React page with status and calibration badge,FR-001 / FR-007,3,Sprint-1,Kshama,TC-017,Authenticated users see the equipment catalogue with live status and calibration state.
+6,Equipment search and filtering,FR-007,3,Sprint-1,Kshama,TC-017,"Search by keyword and filter by laboratory/department, availability and calibration status. Implements the Search / Filter use case including the no-match alternate flow."
+7,Real-time slot availability and alternatives,FR-001 / UC-05,5,Sprint-1,Mohammed Arfan Asgar,TC-007,"Show free and booked slots for a piece of equipment across the next 7 days, and suggest alternatives when a slot is taken."
+8,"React app shell: login page, routing and reservation form",FR-001 / NFR-004,3,Sprint-1,N. Lakshanyaa,"TC-001, TC-027","Frontend foundation: login page, protected routes, navigation, and the reservation form (equipment, date, start, end). Booking should take 5 steps or fewer."
+9,Validate max 2-hour duration and 7-day booking window,FR-001,2,Sprint-1,N. Lakshanyaa,"TC-002, TC-003",Reject reservations that break the duration or advance-booking rules on the server and in the form.
+10,Calibration verification before confirming a reservation,FR-002,5,Sprint-1,Kshama,TC-005,Block reservations for equipment that is not AVAILABLE or whose calibration expires before the slot ends.
+11,Overlap prevention using the database exclusion constraint,FR-003,5,Sprint-1,Manjunatha H J,TC-007,Two students must never hold overlapping slots on the same equipment. The database constraint is the final guard.
+12,"Reservation endpoint: transaction, row lock and token",FR-001,3,Sprint-1,Manjunatha H J,TC-001,POST /api/v1/reservations following SAD sequence 4.1.
+13,"Durability: reservations and tokens survive logout, refresh and restart",NFR-002,5,Sprint-1,N. Lakshanyaa,TC-024,"Make sure confirmed reservations are committed and persisted, and prove it with a restart test."
+14,My Reservations: API and React page,FR-008 (view part),3,Sprint-1,N. Lakshanyaa,TC-018,"Students view their own reservations with token, equipment and time. (Cancel is Sprint-2.)"
+15,Return equipment: POST /reservations/:id/return,FR-004,5,Sprint-2,(assign later),,Sprint-2 item for FR-004.
+16,"Late-return detection: is_late, LATE_RETURNED, late_return_count",FR-004,3,Sprint-2,(assign later),,Sprint-2 item for FR-004.
+17,Technician role routes and RBAC hardening,FR-006 / NFR-003,5,Sprint-2,(assign later),,Sprint-2 item for FR-006 / NFR-003.
+18,Technician updates equipment status (PUT /equipment/:id),FR-005,3,Sprint-2,(assign later),,Sprint-2 item for FR-005.
+19,Technician updates calibration expiration,FR-005,3,Sprint-2,(assign later),,Sprint-2 item for FR-005.
+20,Technician global reservation overview (GET /technician/reservations),FR-009,3,Sprint-2,(assign later),,Sprint-2 item for FR-009.
+21,Concurrency hardening: row lock + exclusion under load,NFR-001,5,Sprint-2,(assign later),,Sprint-2 item for NFR-001.
+22,"Race and load tests: 100 concurrent requests, p95 under 200 ms",NFR-001,5,Sprint-2,(assign later),,Sprint-2 item for NFR-001.
+23,"Security hardening: rate limiting, CORS whitelist, XSS sanitisation, audit log writes",NFR-003,3,Sprint-2,(assign later),,Sprint-2 item for NFR-003.
+24,Automated test suite and 80% coverage reported in CI,NFR-006,5,Sprint-2,(assign later),,Sprint-2 item for NFR-006.
+25,"Documentation: README, SRS/SAD updates, deviations",Docs,3,Sprint-2,(assign later),,Sprint-2 item for Docs.
+26,Cancel upcoming reservation (frees the slot),FR-008,3,Sprint-2,(assign later),,Sprint-2 item for FR-008.
+27,Notification adapter (non-blocking events),FR-010,3,Sprint-2,(assign later),,Sprint-2 item for FR-010.
+28,"Final demo video, bug fixes and development freeze",Release,3,Sprint-2,(assign later),,Sprint-2 item for Release.
