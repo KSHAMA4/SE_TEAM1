@@ -7,28 +7,16 @@ const pool = new Pool({
   port: process.env.DB_PORT || 5432,
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_NAME || 'smart_lab_db',
+  database: process.env.DB_NAME || 'smart_lab_db'
 });
 
 async function seed() {
   try {
-    // --------------------------------------------------
-    // 1. Laboratories
-    // --------------------------------------------------
     await pool.query(`
-      INSERT INTO laboratories
-        (name, department, location_building)
+      INSERT INTO laboratories (name, department, location_building)
       VALUES
-        (
-          'Electronics Lab',
-          'Electronics',
-          'Block A - Room 101'
-        ),
-        (
-          'Computer Lab',
-          'Computer Science',
-          'Block B - Room 202'
-        )
+        ('Electronics Lab', 'Electronics', 'Block A - Room 101'),
+        ('Computer Lab', 'Computer Science', 'Block B - Room 202')
       ON CONFLICT DO NOTHING;
     `);
 
@@ -41,18 +29,9 @@ async function seed() {
 
     const labId = labResult.rows[0].lab_id;
 
-    // --------------------------------------------------
-    // 2. Equipment
-    // --------------------------------------------------
     await pool.query(`
       INSERT INTO equipment
-        (
-          name,
-          model_number,
-          lab_id,
-          status,
-          calibration_expiration
-        )
+        (name, model_number, lab_id, status, calibration_expiration)
       VALUES
         (
           'Oscilloscope E1',
@@ -71,30 +50,13 @@ async function seed() {
       ON CONFLICT DO NOTHING;
     `, [labId]);
 
-    // --------------------------------------------------
-    // 3. Student accounts
-    // --------------------------------------------------
-    const studentPassword = await bcrypt.hash(
-      'Password123!',
-      10
-    );
+    const studentPassword = await bcrypt.hash('Password123!', 10);
 
-    // Student 1
     await pool.query(`
       INSERT INTO users
-        (
-          email,
-          password_hash,
-          role,
-          full_name
-        )
+        (email, password_hash, role, full_name)
       VALUES
-        (
-          'student1@pes.edu',
-          $1,
-          'STUDENT',
-          'Student One'
-        )
+        ('student1@pes.edu', $1, 'STUDENT', 'Student One')
       ON CONFLICT (email)
       DO UPDATE SET
         password_hash = EXCLUDED.password_hash,
@@ -102,22 +64,11 @@ async function seed() {
         full_name = EXCLUDED.full_name;
     `, [studentPassword]);
 
-    // Student 2
     await pool.query(`
       INSERT INTO users
-        (
-          email,
-          password_hash,
-          role,
-          full_name
-        )
+        (email, password_hash, role, full_name)
       VALUES
-        (
-          'student2@pes.edu',
-          $1,
-          'STUDENT',
-          'Student Two'
-        )
+        ('student2@pes.edu', $1, 'STUDENT', 'Student Two')
       ON CONFLICT (email)
       DO UPDATE SET
         password_hash = EXCLUDED.password_hash,
@@ -125,29 +76,13 @@ async function seed() {
         full_name = EXCLUDED.full_name;
     `, [studentPassword]);
 
-    // --------------------------------------------------
-    // 4. Technician account
-    // --------------------------------------------------
-    const technicianPassword = await bcrypt.hash(
-      'Password123!',
-      10
-    );
+    const technicianPassword = await bcrypt.hash('Password123!', 10);
 
     await pool.query(`
       INSERT INTO users
-        (
-          email,
-          password_hash,
-          role,
-          full_name
-        )
+        (email, password_hash, role, full_name)
       VALUES
-        (
-          'technician@smartlab.com',
-          $1,
-          'TECHNICIAN',
-          'Lab Technician'
-        )
+        ('technician@smartlab.com', $1, 'TECHNICIAN', 'Lab Technician')
       ON CONFLICT (email)
       DO UPDATE SET
         password_hash = EXCLUDED.password_hash,
@@ -155,29 +90,13 @@ async function seed() {
         full_name = EXCLUDED.full_name;
     `, [technicianPassword]);
 
-    // --------------------------------------------------
-    // 5. Admin account
-    // --------------------------------------------------
-    const adminPassword = await bcrypt.hash(
-      'admin123',
-      10
-    );
+    const adminPassword = await bcrypt.hash('admin123', 10);
 
     await pool.query(`
       INSERT INTO users
-        (
-          email,
-          password_hash,
-          role,
-          full_name
-        )
+        (email, password_hash, role, full_name)
       VALUES
-        (
-          'admin@smartlab.com',
-          $1,
-          'ADMIN',
-          'Admin User'
-        )
+        ('admin@smartlab.com', $1, 'ADMIN', 'Admin User')
       ON CONFLICT (email)
       DO UPDATE SET
         password_hash = EXCLUDED.password_hash,
@@ -185,9 +104,9 @@ async function seed() {
         full_name = EXCLUDED.full_name;
     `, [adminPassword]);
 
-    console.log('✅ Seed complete');
+    console.log('Seed complete');
   } catch (err) {
-    console.error('❌ Seed failed:', err);
+    console.error('Seed failed:', err);
     process.exitCode = 1;
   } finally {
     await pool.end();
