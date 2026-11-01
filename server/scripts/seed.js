@@ -1,5 +1,5 @@
-// Issue #2 - Seed initial data
 const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
 
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
@@ -11,36 +11,142 @@ const pool = new Pool({
 
 async function seed() {
   try {
-    // Seed labs
+    // --------------------------------------------------
+    // Laboratories
+    // --------------------------------------------------
     await pool.query(`
-      INSERT INTO labs (name, location, capacity)
-      VALUES ('Electronics Lab', 'Block A - Room 101', 10),
-             ('Chemistry Lab', 'Block B - Room 202', 8)
+      INSERT INTO laboratories
+        (name, department, location_building)
+      VALUES
+        ('Electronics Lab', 'Electronics', 'Block A - Room 101'),
+        ('Computer Lab', 'Computer Science', 'Block B - Room 202')
       ON CONFLICT DO NOTHING;
     `);
 
-    // Seed equipment E1 and E2
-    await pool.query(`
-      INSERT INTO equipment (lab_id, name, model, status)
-      VALUES (1, 'Oscilloscope E1', 'Tektronix TBS1052B', 'available'),
-             (1, 'Function Generator E2', 'Rigol DG1022Z', 'available')
-      ON CONFLICT DO NOTHING;
+    const labResult = await pool.query(`
+      SELECT lab_id
+      FROM laboratories
+      ORDER BY lab_id
+      LIMIT 1;
     `);
 
-    // Seed admin user
+    const labId = labResult.rows[0].lab_id;
+
+    // --------------------------------------------------
+    // Equipment
+    // --------------------------------------------------
     await pool.query(`
-      INSERT INTO users (name, email, password, role)
-      VALUES ('Admin User', 'admin@smartlab.com', 'hashed_password', 'admin')
+      INSERT INTO equipment
+        (
+          name,
+          model_number,
+          lab_id,
+          status,
+          calibration_expiration
+        )
+      VALUES
+        (
+          'Oscilloscope E1',
+          'Tektronix TBS1052B',
+          $1,
+          'AVAILABLE',
+          CURRENT_TIMESTAMP + INTERVAL '1 year'
+        ),
+        (
+          'Function Generator E2',
+          'Rigol DG1022Z',
+          $1,
+          'AVAILABLE',
+          CURRENT_TIMESTAMP + INTERVAL '1 year'
+        )
+      ON CONFLICT DO NOTHING;
+    `, [labId]);
+
+    // --------------------------------------------------
+    // Student
+    // --------------------------------------------------
+    const studentPassword = await bcrypt.hash(
+      'Password123!',
+      10
+    );
+
+    await pool.query(`
+      INSERT INTO users
+        (
+          email,
+          password_hash,
+          role,
+          full_name
+        )
+      VALUES
+        (
+          'student1@pes.edu',
+          $1,
+          'STUDENT',
+          'Student One'
+        )
       ON CONFLICT (email) DO NOTHING;
-    `);
+    `, [studentPassword]);
+
+    // --------------------------------------------------
+    // Technician
+    // --------------------------------------------------
+    const technicianPassword = await bcrypt.hash(
+      'Password123!',
+      10
+    );
+
+    await pool.query(`
+      INSERT INTO users
+        (
+          email,
+          password_hash,
+          role,
+          full_name
+        )
+      VALUES
+        (
+          'technician@smartlab.com',
+          $1,
+          'TECHNICIAN',
+          'Lab Technician'
+        )
+      ON CONFLICT (email) DO NOTHING;
+    `, [technicianPassword]);
+
+    // --------------------------------------------------
+    // Admin
+    // --------------------------------------------------
+    const adminPassword = await bcrypt.hash(
+      'admin123',
+      10
+    );
+
+    await pool.query(`
+      INSERT INTO users
+        (
+          email,
+          password_hash,
+          role,
+          full_name
+        )
+      VALUES
+        (
+          'admin@smartlab.com',
+          $1,
+          'ADMIN',
+          'Admin User'
+        )
+      ON CONFLICT (email) DO NOTHING;
+    `, [adminPassword]);
 
     console.log('✅ Seed complete');
   } catch (err) {
-    console.error('Seed failed:', err.message);
-    process.exit(1);
+    console.error('❌ Seed failed:', err);
+    process.exitCode = 1;
   } finally {
     await pool.end();
   }
 }
-  
+
 seed();
