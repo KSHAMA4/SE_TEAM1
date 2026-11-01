@@ -42,7 +42,7 @@ async function seed() {
     const technicianPassword = await bcrypt.hash('Password123!', 10);
 
     await pool.query(
-      "INSERT INTO users (email, password_hash, role, full_name) VALUES ('technician@smartlab.com', $1, 'TECHNICIAN', 'Lab Technician') ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash, role = EXCLUDED.role, full_name = EXCLUDED.full_name",
+      "INSERT INTO users (email, password_hash, role, full_name) VALUES ('tech1@pes.edu', $1, 'TECHNICIAN', 'Lab Technician') ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash, role = EXCLUDED.role, full_name = EXCLUDED.full_name",
       [technicianPassword]
     );
 
