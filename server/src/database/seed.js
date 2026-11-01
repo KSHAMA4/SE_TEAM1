@@ -68,13 +68,13 @@ async function seed() {
 
     const equipmentInsertQuery = `
       INSERT INTO equipment (equipment_id, name, model_number, lab_id, status, calibration_expiration)
-      VALUES 
+      VALUES
         (1, 'Digital Storage Oscilloscope 100MHz (E1)', 'Tektronix TBS1104', $1, 'AVAILABLE', $2),
         (2, 'Spectrum Analyzer 3GHz (E2 - Expired Calibration)', 'Rigol DSA832E', $3, 'AVAILABLE', $4),
         (3, 'Arbitrary Function Generator 25MHz', 'Agilent 33220A', $1, 'MAINTENANCE', $2),
         (4, 'Semiconductor Parameter Analyzer', 'Keysight B1500A', $3, 'OUT_OF_ORDER', $2),
-        (5, 'FPGA Development Workstation UltraScale+', 'Xilinx ZCU102', $2, 'AVAILABLE', $2),
-        (6, 'Precision Triple Output DC Power Supply', 'Keithley 2231A', $2, 'AVAILABLE', $2),
+        (5, 'FPGA Development Workstation UltraScale+', 'Xilinx ZCU102', $5, 'AVAILABLE', $2),
+        (6, 'Precision Triple Output DC Power Supply', 'Keithley 2231A', $5, 'AVAILABLE', $2),
         (7, 'Vector Network Analyzer 8.5GHz', 'Rohde & Schwarz ZNB8', $3, 'AVAILABLE', $2),
         (8, 'Thermal Imaging Camera FLIR', 'FLIR E8-XT', $1, 'AVAILABLE', $2)
       RETURNING equipment_id, name, status, calibration_expiration;
@@ -85,6 +85,7 @@ async function seed() {
       validCalibDate.toISOString(),
       eceLabId,
       expiredCalibDate.toISOString(),
+      csLabId,
     ]);
 
     // Align sequence with highest ID inserted
