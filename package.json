@@ -1,0 +1,22 @@
+{
+  "name": "smart-lab-equipment-slot-reservation-portal",
+  "version": "1.0.0",
+  "description": "Smart Lab Equipment Slot Reservation Portal - Academic & Research Equipment Management Platform",
+  "private": true,
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "start:server": "cd server && npm start",
+    "start:client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run start:server\" \"npm run start:client\"",
+    "test:server": "cd server && npm test",
+    "migrate": "cd server && npm run migrate",
+    "seed": "cd server && npm run seed"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
