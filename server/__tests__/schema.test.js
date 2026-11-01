@@ -1,9 +1,13 @@
+
 // Issue #2 - Schema tests (no DB connection needed)
 const fs = require('fs');
 const path = require('path');
 
 describe('DB Schema - Issue #2', () => {
-  const sqlPath = path.join(__dirname, '../migrations/001_initial_schema.sql');
+  const sqlPath = path.join(
+    __dirname,
+    '../migrations/001_initial_schema.sql'
+  );
 
   test('migration file exists', () => {
     expect(fs.existsSync(sqlPath)).toBe(true);
@@ -30,10 +34,14 @@ describe('DB Schema - Issue #2', () => {
   });
 
   test('migrate script exists', () => {
-    expect(fs.existsSync(path.join(__dirname, '../scripts/migrate.js'))).toBe(true);
+    expect(
+      fs.existsSync(path.join(__dirname, '../scripts/migrate.js'))
+    ).toBe(true);
   });
 
   test('seed script exists', () => {
-    expect(fs.existsSync(path.join(__dirname, '../scripts/seed.js'))).toBe(true);
+    expect(
+      fs.existsSync(path.join(__dirname, '../scripts/seed.js'))
+    ).toBe(true);
   });
 });

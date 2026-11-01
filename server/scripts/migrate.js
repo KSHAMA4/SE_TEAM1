@@ -13,32 +13,17 @@ const pool = new Pool({
 });
 
 async function migrate() {
-  const migrationPath = path.join(
-    __dirname,
-    '../migrations/001_initial_schema.sql'
+  const sql = fs.readFileSync(
+    path.join(__dirname, '../migrations/001_initial_schema.sql'),
+    'utf8'
   );
 
   try {
-    const sql = fs.readFileSync(migrationPath, 'utf8');
-
-    if (!sql.trim()) {
-      throw new Error('Migration file is empty.');
-    }
-
-    await pool.query('BEGIN');
     await pool.query(sql);
-    await pool.query('COMMIT');
-
     console.log('✅ Migration complete');
   } catch (err) {
-    try {
-      await pool.query('ROLLBACK');
-    } catch (_) {
-      // Ignore rollback errors
-    }
-
-    console.error('❌ Migration failed:', err.message);
-    process.exitCode = 1;
+    console.error('Migration failed:', err.message);
+    process.exit(1);
   } finally {
     await pool.end();
   }
