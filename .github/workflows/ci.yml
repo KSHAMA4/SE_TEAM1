@@ -36,10 +36,8 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
-      - name: Install server dependencies
-        run: |
-          cd server
-          npm install
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run database migrations and seeds
         env:
