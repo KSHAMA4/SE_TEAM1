@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     CONSTRAINT chk_end_after_start CHECK (end_time > start_time),
     CONSTRAINT no_overlapping_reservations EXCLUDE USING GIST (
         equipment_id WITH =,
-        tsrange(start_time, end_time) WITH &&
+        tstzrange(start_time, end_time) WITH &&
     ) WHERE (status = 'CONFIRMED')
 );
 
