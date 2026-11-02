@@ -6,9 +6,9 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "migrate": "node src/database/migrate.js",
-    "seed": "node src/database/seed.js",
-    "test": "jest --runInBand --detectOpenHandles"
+    "migrate": "node scripts/migrate.js",
+    "seed": "node scripts/seed.js",
+    "test": "jest --forceExit"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
