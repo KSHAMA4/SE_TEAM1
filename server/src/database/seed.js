@@ -1,19 +1,12 @@
 
-const { Pool } = require('pg');
+const db = require('../config/db');
 const bcrypt = require('bcrypt');
 
-const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_NAME || 'smart_lab_db',
-});
-
 async function seed() {
-  const client = await pool.connect();
+  let client;
 
   try {
+    client = await db.getClient();
     await client.query('BEGIN');
 
     console.log('[SEED] Starting Smart Lab seed...');
@@ -36,7 +29,7 @@ async function seed() {
     const passwordHash = await bcrypt.hash('Password123!', 10);
     const adminHash = await bcrypt.hash('admin123', 10);
 
-    // 3. Insert users required by Sprint-1 tests
+    // 3. Insert users
     const users = [
       ['student1@pes.edu', passwordHash, 'STUDENT', 'Student One'],
       ['student2@pes.edu', passwordHash, 'STUDENT', 'Student Two'],
@@ -48,8 +41,9 @@ async function seed() {
 
     for (const user of users) {
       await client.query(`
-        INSERT INTO users (email, password_hash, role, full_name)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO users
+          (email, password_hash, role, full_name, late_return_count)
+        VALUES ($1, $2, $3, $4, 0)
         ON CONFLICT (email)
         DO UPDATE SET
           password_hash = EXCLUDED.password_hash,
@@ -58,14 +52,14 @@ async function seed() {
       `, user);
     }
 
-    // 4. Equipment calibration dates
+    // 4. Calibration dates
     const validDate = new Date();
     validDate.setMonth(validDate.getMonth() + 6);
 
     const expiredDate = new Date();
     expiredDate.setDate(expiredDate.getDate() - 10);
 
-    // 5. Insert equipment
+    // 5. Equipment fixtures
     const equipment = [
       [1, 'Digital Storage Oscilloscope 100MHz (E1)', 'Tektronix TBS1104', physicsLabId, 'AVAILABLE', validDate],
       [2, 'Spectrum Analyzer 3GHz (E2 - Expired Calibration)', 'Rigol DSA832E', eceLabId, 'AVAILABLE', expiredDate],
@@ -109,12 +103,19 @@ async function seed() {
     console.log('Admin: admin@pes.edu / admin123');
 
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
+
     console.error('[SEED ERROR]', err.message);
     process.exitCode = 1;
+
   } finally {
-    client.release();
-    await pool.end();
+    if (client) {
+      client.release();
+    }
+
+    await db.pool.end();
   }
 }
 
