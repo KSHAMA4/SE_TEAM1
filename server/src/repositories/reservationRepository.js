@@ -57,7 +57,7 @@ class ReservationRepository {
       FROM reservations
       WHERE equipment_id = $1
         AND status = 'CONFIRMED'
-        AND tsrange(start_time, end_time) && tsrange($2, $3)
+        AND tstzrange(start_time, end_time) && tstzrange($2, $3)
     `;
     const executor = clientOrDb || db;
     const result = await executor.query(sql, [equipmentId, startTime, endTime]);
