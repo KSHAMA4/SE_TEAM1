@@ -38,6 +38,7 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
       - name: Run database migrations and seeds
         env:
           DB_HOST: localhost

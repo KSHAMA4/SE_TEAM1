@@ -1,113 +1,120 @@
-const bcrypt = require('bcrypt');
+
 const db = require('../config/db');
+const bcrypt = require('bcrypt');
 
 async function seed() {
-  console.log('[SEED] Starting seed process for Smart Lab Portal...');
-  const client = await db.getClient();
+  let client;
 
   try {
+    client = await db.getClient();
     await client.query('BEGIN');
 
-    // 1. Clean existing test data (safe to re-run)
-    await client.query('DELETE FROM audit_logs');
-    await client.query('DELETE FROM reservations');
-    await client.query('DELETE FROM equipment');
-    await client.query('DELETE FROM laboratories');
-    await client.query('DELETE FROM users');
+    console.log('[SEED] Starting Smart Lab seed...');
 
-    // Reset sequences
-    await client.query('ALTER SEQUENCE users_user_id_seq RESTART WITH 1');
-    await client.query('ALTER SEQUENCE laboratories_lab_id_seq RESTART WITH 1');
-    await client.query('ALTER SEQUENCE equipment_equipment_id_seq RESTART WITH 1');
-    await client.query('ALTER SEQUENCE reservations_reservation_id_seq RESTART WITH 1');
-
-    // 2. Hash default passwords
-    const saltRounds = 10;
-    const defaultPasswordHash = await bcrypt.hash('Password123!', saltRounds);
-
-    // 3. Insert Users (student1, student2, tech1) per Test Plan
-    console.log('[SEED] Inserting users: student1, student2, tech1...');
-    const userInsertQuery = `
-      INSERT INTO users (email, password_hash, role, full_name, late_return_count)
-      VALUES 
-        ('student1@pes.edu', $1, 'STUDENT', 'Student One', 0),
-        ('student2@pes.edu', $1, 'STUDENT', 'Student Two', 0),
-        ('tech1@pes.edu', $1, 'TECHNICIAN', 'Technician Alpha', 0),
-        ('admin@pes.edu', $1, 'ADMIN', 'System Admin', 0)
-      RETURNING user_id, email, role;
-    `;
-    const usersRes = await client.query(userInsertQuery, [defaultPasswordHash]);
-    console.log(`[SEED] Created ${usersRes.rowCount} users.`);
-
-    // 4. Insert Laboratories
-    console.log('[SEED] Inserting laboratories...');
-    const labInsertQuery = `
+    // 1. Create laboratories
+    const labResult = await client.query(`
       INSERT INTO laboratories (name, department, location_building)
-      VALUES 
+      VALUES
         ('Advanced Physics Lab', 'Physics', 'Science Block Level 3'),
         ('Embedded Systems & IoT Lab', 'Computer Science', 'Tech Park Ground Floor'),
         ('RF & Microwave Engineering Lab', 'Electronics & Comm', 'ECE Block Level 2')
-      RETURNING lab_id, name;
-    `;
-    const labRes = await client.query(labInsertQuery);
-    const physicsLabId = labRes.rows[0].lab_id;
-    const csLabId = labRes.rows[1].lab_id;
-    const eceLabId = labRes.rows[2].lab_id;
-    console.log(`[SEED] Created ${labRes.rowCount} laboratories.`);
+      RETURNING lab_id, department;
+    `);
 
-    // 5. Insert Equipment: E1 (AVAILABLE, valid), E2 (expired calibration for TC-005), plus others
-    console.log('[SEED] Inserting equipment items (E1 valid, E2 expired calibration)...');
-    
-    // Future expiration (valid for next 6 months)
-    const validCalibDate = new Date();
-    validCalibDate.setMonth(validCalibDate.getMonth() + 6);
+    const physicsLabId = labResult.rows[0].lab_id;
+    const csLabId = labResult.rows[1].lab_id;
+    const eceLabId = labResult.rows[2].lab_id;
 
-    // Past expiration (expired 10 days ago) - triggers TC-005
-    const expiredCalibDate = new Date();
-    expiredCalibDate.setDate(expiredCalibDate.getDate() - 10);
+    // 2. Create passwords
+    const passwordHash = await bcrypt.hash('Password123!', 10);
+    const adminHash = await bcrypt.hash('admin123', 10);
 
-    const equipmentInsertQuery = `
-      INSERT INTO equipment (equipment_id, name, model_number, lab_id, status, calibration_expiration)
-      VALUES
-        (1, 'Digital Storage Oscilloscope 100MHz (E1)', 'Tektronix TBS1104', $1, 'AVAILABLE', $2),
-        (2, 'Spectrum Analyzer 3GHz (E2 - Expired Calibration)', 'Rigol DSA832E', $3, 'AVAILABLE', $4),
-        (3, 'Arbitrary Function Generator 25MHz', 'Agilent 33220A', $1, 'MAINTENANCE', $2),
-        (4, 'Semiconductor Parameter Analyzer', 'Keysight B1500A', $3, 'OUT_OF_ORDER', $2),
-        (5, 'FPGA Development Workstation UltraScale+', 'Xilinx ZCU102', $5, 'AVAILABLE', $2),
-        (6, 'Precision Triple Output DC Power Supply', 'Keithley 2231A', $5, 'AVAILABLE', $2),
-        (7, 'Vector Network Analyzer 8.5GHz', 'Rohde & Schwarz ZNB8', $3, 'AVAILABLE', $2),
-        (8, 'Thermal Imaging Camera FLIR', 'FLIR E8-XT', $1, 'AVAILABLE', $2)
-      RETURNING equipment_id, name, status, calibration_expiration;
-    `;
+    // 3. Insert users
+    const users = [
+      ['student1@pes.edu', passwordHash, 'STUDENT', 'Student One'],
+      ['student2@pes.edu', passwordHash, 'STUDENT', 'Student Two'],
+      ['tech1@pes.edu', passwordHash, 'TECHNICIAN', 'Technician Alpha'],
+      ['technician@smartlab.com', passwordHash, 'TECHNICIAN', 'Lab Technician'],
+      ['admin@pes.edu', adminHash, 'ADMIN', 'System Admin'],
+      ['admin@smartlab.com', adminHash, 'ADMIN', 'Admin User'],
+    ];
 
-    const equipRes = await client.query(equipmentInsertQuery, [
-      physicsLabId,
-      validCalibDate.toISOString(),
-      eceLabId,
-      expiredCalibDate.toISOString(),
-      csLabId,
-    ]);
+    for (const user of users) {
+      await client.query(`
+        INSERT INTO users
+          (email, password_hash, role, full_name, late_return_count)
+        VALUES ($1, $2, $3, $4, 0)
+        ON CONFLICT (email)
+        DO UPDATE SET
+          password_hash = EXCLUDED.password_hash,
+          role = EXCLUDED.role,
+          full_name = EXCLUDED.full_name;
+      `, user);
+    }
 
-    // Align sequence with highest ID inserted
-    await client.query("SELECT setval('equipment_equipment_id_seq', (SELECT MAX(equipment_id) FROM equipment))");
+    // 4. Calibration dates
+    const validDate = new Date();
+    validDate.setMonth(validDate.getMonth() + 6);
 
-    console.log(`[SEED] Created ${equipRes.rowCount} equipment items.`);
+    const expiredDate = new Date();
+    expiredDate.setDate(expiredDate.getDate() - 10);
+
+    // 5. Equipment fixtures
+    const equipment = [
+      [1, 'Digital Storage Oscilloscope 100MHz (E1)', 'Tektronix TBS1104', physicsLabId, 'AVAILABLE', validDate],
+      [2, 'Spectrum Analyzer 3GHz (E2 - Expired Calibration)', 'Rigol DSA832E', eceLabId, 'AVAILABLE', expiredDate],
+      [3, 'Arbitrary Function Generator 25MHz', 'Agilent 33220A', physicsLabId, 'MAINTENANCE', validDate],
+      [4, 'Semiconductor Parameter Analyzer', 'Keysight B1500A', eceLabId, 'OUT_OF_ORDER', validDate],
+      [5, 'FPGA Development Workstation UltraScale+', 'Xilinx ZCU102', csLabId, 'AVAILABLE', validDate],
+      [6, 'Precision Triple Output DC Power Supply', 'Keithley 2231A', csLabId, 'AVAILABLE', validDate],
+      [7, 'Vector Network Analyzer 8.5GHz', 'Rohde & Schwarz ZNB8', eceLabId, 'AVAILABLE', validDate],
+      [8, 'Thermal Imaging Camera FLIR', 'FLIR E8-XT', physicsLabId, 'AVAILABLE', validDate],
+    ];
+
+    for (const item of equipment) {
+      await client.query(`
+        INSERT INTO equipment
+          (equipment_id, name, model_number, lab_id, status, calibration_expiration)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        ON CONFLICT (equipment_id)
+        DO UPDATE SET
+          name = EXCLUDED.name,
+          model_number = EXCLUDED.model_number,
+          lab_id = EXCLUDED.lab_id,
+          status = EXCLUDED.status,
+          calibration_expiration = EXCLUDED.calibration_expiration;
+      `, item);
+    }
+
+    // 6. Synchronize equipment sequence
+    await client.query(`
+      SELECT setval(
+        'equipment_equipment_id_seq',
+        (SELECT MAX(equipment_id) FROM equipment)
+      );
+    `);
 
     await client.query('COMMIT');
+
     console.log('[SEED] Seed completed successfully!');
-    console.log('--- CREDENTIALS FOR TESTING ---');
-    console.log('Student 1:    student1@pes.edu / Password123! (Role: STUDENT)');
-    console.log('Student 2:    student2@pes.edu / Password123! (Role: STUDENT)');
-    console.log('Technician 1: tech1@pes.edu    / Password123! (Role: TECHNICIAN)');
-    console.log('Equipment E1 (Valid Calib):    equipment_id = 1');
-    console.log('Equipment E2 (Expired Calib):  equipment_id = 2');
-    console.log('-------------------------------');
+    console.log('Student: student1@pes.edu / Password123!');
+    console.log('Student: student2@pes.edu / Password123!');
+    console.log('Technician: tech1@pes.edu / Password123!');
+    console.log('Admin: admin@pes.edu / admin123');
+
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
+
     console.error('[SEED ERROR]', err.message);
-    process.exit(1);
+    process.exitCode = 1;
+
   } finally {
-    client.release();
+    if (client) {
+      client.release();
+    }
+
     await db.pool.end();
   }
 }
