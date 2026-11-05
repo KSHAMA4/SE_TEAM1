@@ -28,6 +28,48 @@ class EquipmentController {
   async updateStatus(req, res) {
     return res.status(200).json({
       message: 'Technician update endpoint scheduled for Sprint-2.',
+
+  async updateStatus(req, res, next) {
+  try {
+    const equipmentId = parseInt(req.params.id, 10);
+    const { status } = req.body;
+
+    const allowed = [
+      'AVAILABLE',
+      'MAINTENANCE',
+      'OUT_OF_ORDER'
+    ];
+
+    if (!status || !allowed.includes(status)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: `Status must be one of: ${allowed.join(', ')}`
+      });
+    }
+
+    const db = require('../database/db');
+
+    const { rows } = await db.query(
+      'UPDATE equipment SET status = $1 WHERE equipment_id = $2 RETURNING *',
+      [status, equipmentId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Equipment not found.'
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Equipment status updated.',
+      equipment: rows[0]
+    });
+
+  } catch (err) {
+    next(err);
+  }
+}
     });
   }
 }
