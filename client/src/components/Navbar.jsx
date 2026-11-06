@@ -43,6 +43,20 @@ export default function Navbar({ activeTab, setActiveTab }) {
                       : 'text-blue-100 hover:bg-blue-800/50'
                   }`}
                 >
+                
+                  {user.role === 'TECHNICIAN' && (
+                    <button
+                      onClick={() => setActiveTab('techDashboard')}
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center space-x-1 transition ${
+                        activeTab === 'techDashboard'
+                          ? 'bg-blue-800 text-white shadow-inner'
+                          : 'text-blue-100 hover:bg-blue-800/50'
+                      }`}
+                    >
+                      <span>Tech Dashboard</span>
+                    </button>
+                  )}
+
                   <Calendar className="w-4 h-4" />
                   <span>My Reservations</span>
                 </button>
