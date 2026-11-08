@@ -1,20 +1,68 @@
+
 const express = require('express');
 const router = express.Router();
+
 const reservationController = require('../controllers/reservationController');
 const authenticateToken = require('../middleware/authMiddleware');
 const authorizeRoles = require('../middleware/roleMiddleware');
 
-// Student creates slot reservation (FR-001, FR-002, FR-003)
-router.post('/', authenticateToken, authorizeRoles('STUDENT'), reservationController.create);
+// ==========================================
+// SPRINT 1 - RESERVATIONS
+// ==========================================
 
-// Student views own reservations (FR-008)
-router.get('/me', authenticateToken, authorizeRoles('STUDENT'), reservationController.getMyReservations);
+// Student creates a reservation
+router.post(
+  '/',
+  authenticateToken,
+  authorizeRoles('STUDENT'),
+  reservationController.create
+);
 
-// Real-time slot availability for an equipment (FR-001, UC-05)
-router.get('/availability/:id', authenticateToken, reservationController.getAvailability);
+// Student views their own reservations
+router.get(
+  '/me',
+  authenticateToken,
+  authorizeRoles('STUDENT'),
+  reservationController.getMyReservations
+);
 
-// Sprint-2 Placeholders
-router.post('/:id/cancel', authenticateToken, authorizeRoles('STUDENT'), reservationController.cancel);
-router.post('/:id/return', authenticateToken, authorizeRoles('STUDENT'), reservationController.returnEquipment);
+// Get real-time equipment slot availability
+router.get(
+  '/availability/:id',
+  authenticateToken,
+  reservationController.getAvailability
+);
+
+// ==========================================
+// SPRINT 2 - ISSUE #15: CANCELLATION
+// ==========================================
+
+// Student cancels their own reservation
+router.post(
+  '/:id/cancel',
+  authenticateToken,
+  authorizeRoles('STUDENT'),
+  reservationController.cancel
+);
+
+// ==========================================
+// SPRINT 2 - ISSUE #16: TECHNICIAN RETURN
+// ==========================================
+
+// Technician/Admin marks equipment as returned
+router.post(
+  '/:id/return',
+  authenticateToken,
+  authorizeRoles('TECHNICIAN', 'ADMIN'),
+  reservationController.returnEquipment
+);
+
+// Technician/Admin views all reservations
+router.get(
+  '/all',
+  authenticateToken,
+  authorizeRoles('TECHNICIAN', 'ADMIN'),
+  reservationController.getAllReservations
+);
 
 module.exports = router;

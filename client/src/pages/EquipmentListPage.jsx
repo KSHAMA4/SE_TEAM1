@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import ReservationModal from '../components/ReservationModal';
 import { Search, Filter, CheckCircle2, AlertOctagon, Wrench, Calendar, Beaker } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function EquipmentListPage() {
   const [equipmentList, setEquipmentList] = useState([]);
@@ -10,6 +11,7 @@ export default function EquipmentListPage() {
   const [selectedLab, setSelectedLab] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [activeItemForBooking, setActiveItemForBooking] = useState(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchEquipment();
