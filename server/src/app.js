@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -9,6 +10,9 @@ const authRoutes = require('./routes/authRoutes');
 const equipmentRoutes = require('./routes/equipmentRoutes');
 const reservationRoutes = require('./routes/reservationRoutes');
 const errorHandler = require('./middleware/errorHandler');
+
+// Audit Logs and User Management routes
+const auditRoutes = require('./routes/auditRoutes');
 const userRoutes = require('./routes/userRoutes');
 
 const app = express();
@@ -61,6 +65,11 @@ app.get('/health', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/equipment', equipmentRoutes);
 app.use('/api/v1/reservations', reservationRoutes);
+
+// Issue #20 - Admin Audit Logs
+app.use('/api/v1/audit-logs', auditRoutes);
+
+// Admin User Management
 app.use('/api/v1/users', userRoutes);
 
 // ==========================================
