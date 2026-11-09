@@ -135,7 +135,7 @@ describe('Sprint-1 Test Plan Verification Suite (UE24CS341A Team 001)', () => {
   // TC-001: Reserve a valid 2-hour slot on E1 (Returns Token & 201 Created)
   test('TC-001: Reserve a valid 2-hour slot (120 minutes) on E1 returns 201 Created and UUID token', async () => {
     const start = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000); // 2 days ahead
-    start.setHours(10, 0, 0, 0);
+    start.setHours(14, 0, 0, 0);
     const end = new Date(start.getTime() + 120 * 60 * 1000); // Exactly 120 minutes
 
     const res = await request(app)
@@ -155,7 +155,7 @@ describe('Sprint-1 Test Plan Verification Suite (UE24CS341A Team 001)', () => {
   // TC-007: Overlapping slot rejection (Double-booking prevention 409 Conflict)
   test('TC-007: Overlapping reservation request rejected with 409 Conflict and suggested alternatives', async () => {
     const baseStart = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
-    baseStart.setHours(10, 0, 0, 0);
+    baseStart.setHours(14, 0, 0, 0);
     // Overlapping slot: 11:00 to 13:00 (overlaps with 10:00 - 12:00 created in TC-001)
     const overlapStart = new Date(baseStart.getTime() + 60 * 60 * 1000);
     const overlapEnd = new Date(overlapStart.getTime() + 120 * 60 * 1000);
