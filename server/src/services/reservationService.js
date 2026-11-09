@@ -63,14 +63,25 @@ class ReservationService {
   }
 
   // Suggest alternative 2-hour slots if overlap occurs (FR-003, UC-05)
-  async getSuggestedAlternatives(equipmentId, requestedDate) {
+  async getSuggestedAlternatives(equipmentId, requestedDate, client = null) {
     const dayStart = new Date(requestedDate);
     dayStart.setHours(9, 0, 0, 0); // Lab opens 09:00
 
     const dayEnd = new Date(requestedDate);
     dayEnd.setHours(17, 0, 0, 0); // Lab closes 17:00
 
-    const existing = await reservationRepository.findByEquipmentAndWindow(equipmentId, dayStart, dayEnd);
+    const existing = client
+  ? await client.query(
+      `SELECT reservation_id, equipment_id, student_id, start_time, end_time, status, token
+       FROM reservations
+       WHERE equipment_id = $1
+         AND status = 'CONFIRMED'
+         AND start_time < $3
+         AND end_time > $2
+       ORDER BY start_time ASC`,
+      [equipmentId, dayStart, dayEnd]
+    ).then(result => result.rows)
+  : await reservationRepository.findByEquipmentAndWindow(equipmentId, dayStart, dayEnd);
 
     const candidateSlots = [
       { start: '09:00', end: '11:00' },
@@ -129,7 +140,7 @@ class ReservationService {
       // 3. Check for overlapping reservations
       const overlaps = await reservationRepository.findOverlapping(client, equipmentId, startTime, endTime);
       if (overlaps.length > 0) {
-        const alternatives = await this.getSuggestedAlternatives(equipmentId, startTime);
+        const alternatives = await this.getSuggestedAlternatives(equipmentId, startTime, client);
         const error = new Error('Requested time slot overlaps with an existing confirmed reservation.');
         error.statusCode = 409;
         error.alternatives = alternatives;
@@ -160,7 +171,7 @@ class ReservationService {
       if (err.code === '23P01') {
         const conflictErr = new Error('Double-booking prevented: Database exclusion constraint detected overlapping slot.');
         conflictErr.statusCode = 409;
-        const alternatives = await this.getSuggestedAlternatives(equipmentId, startTime);
+        const alternatives = await this.getSuggestedAlternatives(equipmentId, startTime, client);
         conflictErr.alternatives = alternatives;
         throw conflictErr;
       }
