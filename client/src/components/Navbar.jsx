@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Beaker, User, LogOut, Calendar, BookOpen } from 'lucide-react';
+import { Beaker, LogOut, Calendar, BookOpen } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab }) {
   const { user, logout } = useAuth();
@@ -35,6 +35,7 @@ export default function Navbar({ activeTab, setActiveTab }) {
                   <BookOpen className="w-4 h-4" />
                   <span>Equipment Catalog</span>
                 </button>
+
                 <button
                   onClick={() => setActiveTab('reservations')}
                   className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center space-x-1 transition ${
@@ -43,23 +44,48 @@ export default function Navbar({ activeTab, setActiveTab }) {
                       : 'text-blue-100 hover:bg-blue-800/50'
                   }`}
                 >
-                
-                  {user.role === 'TECHNICIAN' && (
+                  <Calendar className="w-4 h-4" />
+                  <span>My Reservations</span>
+                </button>
+
+                {user.role === 'TECHNICIAN' && (
+                  <button
+                    onClick={() => setActiveTab('techDashboard')}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center space-x-1 transition ${
+                      activeTab === 'techDashboard'
+                        ? 'bg-blue-800 text-white shadow-inner'
+                        : 'text-blue-100 hover:bg-blue-800/50'
+                    }`}
+                  >
+                    <span>Tech Dashboard</span>
+                  </button>
+                )}
+
+                {user.role === 'ADMIN' && (
+                  <>
                     <button
-                      onClick={() => setActiveTab('techDashboard')}
+                      onClick={() => setActiveTab('adminUsers')}
                       className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center space-x-1 transition ${
-                        activeTab === 'techDashboard'
+                        activeTab === 'adminUsers'
                           ? 'bg-blue-800 text-white shadow-inner'
                           : 'text-blue-100 hover:bg-blue-800/50'
                       }`}
                     >
-                      <span>Tech Dashboard</span>
+                      <span>User Management</span>
                     </button>
-                  )}
 
-                  <Calendar className="w-4 h-4" />
-                  <span>My Reservations</span>
-                </button>
+                    <button
+                      onClick={() => setActiveTab('adminAudit')}
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center space-x-1 transition ${
+                        activeTab === 'adminAudit'
+                          ? 'bg-blue-800 text-white shadow-inner'
+                          : 'text-blue-100 hover:bg-blue-800/50'
+                      }`}
+                    >
+                      <span>Audit Logs</span>
+                    </button>
+                  </>
+                )}
               </nav>
 
               <div className="flex items-center space-x-3 border-l border-blue-700 pl-4">

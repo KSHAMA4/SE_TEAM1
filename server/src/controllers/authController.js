@@ -13,10 +13,22 @@ class AuthController {
         sameSite: 'lax',
         maxAge: 15 * 60 * 1000, // 15 minutes TTL
       });
+      
+      try {
+        const db = require('../config/db');
+        const userId = user.user_id || user.userId;
+        await db.query(
+          `INSERT INTO audit_logs (actor_user_id, action, target_table, details, ip_address)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [userId, 'LOGIN', 'users', JSON.stringify({ email: user.email }), req.ip]
+        );
+      } catch (e) {
+        // don't block login if audit fails
+      }
 
       return res.status(200).json({
         message: 'Authentication successful.',
-        token, // also sent in response body for flexible API/testing usage
+        token,
         user,
       });
     } catch (err) {

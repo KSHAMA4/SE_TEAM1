@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import EquipmentListPage from './pages/EquipmentListPage';
 import MyReservationsPage from './pages/MyReservationsPage';
 import TechnicianDashboardPage from './pages/TechnicianDashboardPage';
+import AdminAuditPage from './pages/AdminAuditPage';
 
 function MainApp() {
   const { user } = useAuth();
@@ -21,6 +22,8 @@ function MainApp() {
         {activeTab === 'catalog' && <EquipmentListPage />}
         {activeTab === 'reservations' && <MyReservationsPage />}
         {activeTab === 'techDashboard' && user.role === 'TECHNICIAN' && (<TechnicianDashboardPage />)}
+        {activeTab === 'adminAudit' && user.role === 'ADMIN' && <AdminAuditPage />}
+        
       </main>
       <footer className="bg-white border-t border-gray-200 py-4 text-center text-xs text-gray-500">
         Smart Lab Equipment Slot Reservation Portal • PES University Software Engineering Lab (Team 001)

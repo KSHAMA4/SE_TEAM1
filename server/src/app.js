@@ -9,6 +9,7 @@ const authRoutes = require('./routes/authRoutes');
 const equipmentRoutes = require('./routes/equipmentRoutes');
 const reservationRoutes = require('./routes/reservationRoutes');
 const errorHandler = require('./middleware/errorHandler');
+const auditRoutes = require('./routes/auditRoutes');
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.get('/health', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/equipment', equipmentRoutes);
 app.use('/api/v1/reservations', reservationRoutes);
+app.use('/api/v1/audit-logs', auditRoutes);
 
 // ==========================================
 // Global Error Handler
