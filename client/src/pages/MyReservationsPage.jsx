@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 import {
   Calendar,
   Clock,
@@ -9,10 +9,12 @@ import {
   XCircle,
   CheckCircle,
   AlertCircle,
-  Loader2
+  Loader2,
+  AlertTriangle
 } from 'lucide-react';
 
 export default function MyReservationsPage() {
+  const { user } = useAuth();
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState(null);
@@ -82,11 +84,17 @@ export default function MyReservationsPage() {
       case 'CANCELLED':
         return 'bg-red-100 text-red-800';
       case 'COMPLETED':
+      case 'RETURNED':
         return 'bg-blue-100 text-blue-800';
+      case 'LATE_RETURNED':
+        return 'bg-orange-100 text-orange-800';
       default:
         return 'bg-gray-100 text-gray-700';
     }
   };
+
+  // Safely check late return count from user profile
+  const lateCount = user?.lateReturnCount ?? user?.late_return_count ?? 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -110,6 +118,17 @@ export default function MyReservationsPage() {
           <span>Refresh List</span>
         </button>
       </div>
+
+      {/* Issue #23: Late Return Warning Banner */}
+      {lateCount > 0 && (
+        <div className="mb-6 p-4 rounded-xl bg-orange-50 border border-orange-200 text-orange-900 flex items-center gap-3 shadow-sm">
+          <AlertTriangle className="w-5 h-5 text-orange-600 flex-shrink-0" />
+          <div className="text-sm">
+            <span className="font-bold">Late Returns Penalty: {lateCount} incident(s).</span>
+            <span className="ml-2 text-orange-700">Please return all lab equipment on or before your reserved end time to keep your borrowing privileges active.</span>
+          </div>
+        </div>
+      )}
 
       {successMessage && (
         <div className="mb-4 p-3 rounded-lg bg-green-50 border border-green-200 text-green-800 flex items-center gap-2">
