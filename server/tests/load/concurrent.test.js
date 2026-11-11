@@ -5,7 +5,7 @@ const db = require('../../src/config/db');
 describe('NFR-001: 100-user concurrent booking race condition test', () => {
   let studentToken;
 
-  // Use Day 5 (10:00 AM) so it never conflicts with sprint1 tests on Day 1 & 2
+  // Use Day 5 (10:00 AM) so it never touches Day 1 or Day 2 used by sprint1 tests
   const slotStart = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
   slotStart.setHours(10, 0, 0, 0);
   const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
@@ -20,7 +20,7 @@ describe('NFR-001: 100-user concurrent booking race condition test', () => {
 
     studentToken = login.body.token;
 
-    // Clean previous reservations for this test slot
+    // Clean any previous reservations for this Day 5 slot
     await db.query(
       'DELETE FROM reservations WHERE equipment_id = 1 AND start_time = $1',
       [slotStart.toISOString()]
