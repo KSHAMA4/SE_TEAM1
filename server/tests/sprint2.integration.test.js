@@ -1,17 +1,20 @@
 const request = require('supertest');
 const app = require('../src/app');
 
-// Build a 1-hour slot inside the 7-day booking window.
-// "index" keeps slots within one run apart; the minute-based offset
-// keeps slots from different runs apart, so reruns don't hit 409.
+// 1-hour slot on day 3-4 from now (UTC): clear of Sprint-1 (day 2, 14:00)
+// and the load test (day 5, 10:00). Each test index gets its own 15-hour
+// window with a random start inside it, so reruns rarely collide.
 function makeSlot(index) {
-  const minuteOffset = (Math.floor(Date.now() / 60000) % 60) * 90;
-  const start = new Date(
-    Date.now() + 24 * 3600 * 1000 + minuteOffset * 60000 + index * 3 * 3600 * 1000
-  );
-  start.setSeconds(0, 0);
-  const end = new Date(start.getTime() + 60 * 60 * 1000);
-  return { start_time: start.toISOString(), end_time: end.toISOString() };
+  const base = new Date(Date.now() + 3 * 24 * 3600 * 1000);
+  base.setUTCHours(0, 0, 0, 0);
+  const startMs =
+    base.getTime() +
+    index * 15 * 3600 * 1000 +
+    Math.floor(Math.random() * 13 * 60) * 60000;
+  return {
+    start_time: new Date(startMs).toISOString(),
+    end_time: new Date(startMs + 3600 * 1000).toISOString()
+  };
 }
 
 describe('Sprint 2 - Integration Tests', () => {
