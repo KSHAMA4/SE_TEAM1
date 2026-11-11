@@ -45,7 +45,9 @@ const apiLimiter = rateLimit({
   },
 });
 
-app.use('/api/v1', apiLimiter);
+if (process.env.NODE_ENV !== 'test') {
+  app.use('/api/v1', apiLimiter);
+}
 
 // ==========================================
 // Health Check
