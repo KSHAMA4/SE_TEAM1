@@ -6,7 +6,7 @@ describe('NFR-001: 100-user concurrent booking race condition test', () => {
   let studentToken;
 
   // Dynamic slot: 2 days in the future
-  const slotStart = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
+  const slotStart = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
   slotStart.setHours(14, 0, 0, 0);
   const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
 
