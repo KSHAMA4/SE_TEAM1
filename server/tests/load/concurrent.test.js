@@ -5,13 +5,12 @@ const db = require('../../src/config/db');
 describe('NFR-001: 100-user concurrent booking race condition test', () => {
   let studentToken;
 
-   // Use Day 5 (10:00 AM) to avoid overlapping with Sprint 1 test slots
+  // Use Day 5 (10:00 AM) so it never touches Day 1 or Day 2 used by sprint1 tests
   const slotStart = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
   slotStart.setHours(10, 0, 0, 0);
   const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
 
   beforeAll(async () => {
-    // Login as student to get authentication token
     const login = await request(app)
       .post('/api/v1/auth/login')
       .send({
@@ -21,15 +20,11 @@ describe('NFR-001: 100-user concurrent booking race condition test', () => {
 
     studentToken = login.body.token;
 
-    // Clean previous reservations for this test slot
+    // Clean any previous reservations for this Day 5 slot
     await db.query(
       'DELETE FROM reservations WHERE equipment_id = 1 AND start_time = $1',
       [slotStart.toISOString()]
     );
-  });
-
-  afterAll(async () => {
-    await db.pool.end();
   });
 
   it('allows exactly 1 booking and rejects 99 with 409 for the same slot', async () => {
@@ -43,7 +38,6 @@ describe('NFR-001: 100-user concurrent booking race condition test', () => {
           end_time: slotEnd.toISOString(),
         });
 
-    // Fire 100 simultaneous requests
     const results = await Promise.all(
       Array.from({ length: 100 }, bookSlot)
     );
