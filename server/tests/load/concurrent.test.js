@@ -52,6 +52,8 @@ describe('NFR-001: 100-user concurrent booking race condition test', () => {
     const rejected = results.filter(
       r => r.status === 409 || r.status === 429
     );
+    expect(created.length).toBe(1);
+    expect(rejected.length).toBe(99);
 
     console.log(
       `✅ Created: ${created.length} | ❌ Rejected: ${rejected.length}`
