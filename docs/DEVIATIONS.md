@@ -44,3 +44,12 @@ This document logs all architectural decisions, clarifications, and intentional 
 
 ### Deviation 5: Calendar Sprint Window
 * **Observation:** The project work was completed subsequent to the calendar dates (19 Oct to 23 Oct) due to laboratory lab schedule arrangements. All functional criteria, test cases, and deliverables remain 100% compliant with Sprint-1 specifications.
+
+
+### Deviation 6: Sprint 2 Completed Features
+All Sprint 2 issues (#15-#28) implemented as planned.
+Admin seed user (admin@pes.edu) added in Sprint 2 for admin feature testing.
+
+### Deviation 7: Development Cycle Frozen
+All features complete. No further feature branches will be created.
+
