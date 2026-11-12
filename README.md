@@ -74,3 +74,15 @@ Sprint-1 assigns **exactly 13 story points** to each of the 4 team members:
 * **N. Lakshanyaa (PES1UG24AM169)**: Issues #8, #9, #13, #14 -> `feature/issue-8-...`
 
 See `HANDOFF/` for individual step-by-step Git Bash commands for each member.
+
+
+## Test Credentials
+
+| Role | Email | Password |
+|---|---|---|
+| Student | student1@pes.edu | Password123! |
+| Student | student2@pes.edu | Password123! |
+| Technician | techi@pes.edu | Password123! |
+| Admin | admin@pes.edu | Password123! |
+
+
